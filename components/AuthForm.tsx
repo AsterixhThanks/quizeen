@@ -4,14 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useGetQueryParams } from "@/hooks/useQuery";
 import { loginUser, registerUser } from "@/lib/features/authSlice"; // Async thunks from our auth slice
 import { useAppDispatch } from "@/lib/hooks";
 import { AuthResponse } from "@/types";
+import api from "@/utils/api";
 import clsx from "clsx";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
-import api from "@/utils/api";
 
 interface AuthFormProps {
   type: "login" | "register"; // Distinguishes between login and registration modes
@@ -28,7 +29,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type,intercept,onSuccess }) => {
   const [role, setRole] = useState<"student" | "creator">("student");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false)  
-
+  const queryParams = useGetQueryParams<{redirect:{from:string}}>()
   const dispatch = useAppDispatch();
   const router = useRouter();
 
@@ -39,10 +40,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ type,intercept,onSuccess }) => {
           onSuccess(res)
         }
       }else{
-        router.push("/");
+        router.push(queryParams.redirect.from||"/");
       }
     },
-    [intercept, onSuccess, router],
+    [intercept, onSuccess, queryParams.redirect.from, router],
   )
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

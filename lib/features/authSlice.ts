@@ -110,6 +110,7 @@ const authSlice = createSlice({
       state.role = "none";
       
       Cookies.remove("token")
+      Cookies.remove("refreshToken")
     },
     setRole: (state, action: { payload: userRoles }) => {
       state.role = action.payload;

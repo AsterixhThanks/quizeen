@@ -4,44 +4,39 @@ import Loader from "@/components/loader";
 import QuizCard from "@/components/QuizCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { fetchQuizzes } from "@/lib/features/quizSlice"; // Action for fetching quizzes
+import { fetchQuizzes } from "@/lib/features/quizSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { Quiz } from "@/types";
 import { SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const filterQuizzes = (quizzes: Quiz[], filter: string) => {
+  const term = filter.trim().toLowerCase();
+  if (!term) return quizzes;
   return quizzes.filter(
     (quiz) =>
-      quiz.title.includes(filter) ||
-      quiz.description?.includes(filter) ||
-      quiz.createdBy.includes(filter)
+      quiz.title.toLowerCase().includes(term) ||
+      quiz.description?.toLowerCase().includes(term) ||
+      quiz.createdBy.toLowerCase().includes(term)
   );
-}
+};
+
 const QuizzesPage = () => {
   const dispatch = useAppDispatch();
   const { quizzes, loading, error } = useAppSelector((state) => state.quiz);
   const [searchFilterInput, setSearchFilterInput] = useState("");
-  console.log("Quizzes fetched:", quizzes);
-  const [searchFilter, setSearchFilter] = useState<Quiz[]>(filterQuizzes(quizzes, searchFilterInput));
+  const [searchFilter, setSearchFilter] = useState<Quiz[]>([]);
 
   useEffect(() => {
-    dispatch(fetchQuizzes()); 
-  }, [dispatch])
-  
-  useEffect(() => {
-    setSearchFilterInput("")
+    dispatch(fetchQuizzes());
+  }, [dispatch]);
 
-    return()=>{
-      setSearchFilterInput("")
-    }
-  }, [])
-  
+  useEffect(() => {
+    setSearchFilter(quizzes);
+  }, [quizzes]);
 
   const handleSearch = () => {
-    setSearchFilter(
-      filterQuizzes(quizzes, searchFilterInput)
-    );
+    setSearchFilter(filterQuizzes(quizzes, searchFilterInput));
   };
 
   if (loading) return <Loader />;
@@ -55,18 +50,19 @@ const QuizzesPage = () => {
         </h1>
         <div className="w-full bg-gray-100 p-2 mx-auto mb-4 flex justify-center items-center gap-2 sticky top-11 sm:top-12 sm:pt-4">
           <Input
+            value={searchFilterInput}
             onChange={(e) => setSearchFilterInput(e.target.value)}
             className="border-neutral-400 border-[1px] max-w-md"
             placeholder="Search for quiz"
             type="text"
           />
-          <Button onClick={handleSearch} variant={"outline"}>
+          <Button onClick={handleSearch} variant="outline">
             <SearchIcon />
             Search
           </Button>
         </div>
         <div className="px-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {searchFilter?.length === 0 ? (
+          {searchFilter.length === 0 ? (
             <div className="col-span-full text-center">
               <p>No quizzes available at the moment.</p>
             </div>
